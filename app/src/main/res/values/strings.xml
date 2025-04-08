@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FocusFlow</string>
+    
+    <!-- Bottom Navigation -->
+    <string name="home">Home</string>
+    <string name="garden">Garden</string>
+    <string name="statistics">Statistics</string>
+    <string name="settings">Settings</string>
+    
+    <!-- Home Screen -->
+    <string name="today_focus">Today\'s Focus: %1$s</string>
+    <string name="current_streak">Streak: %1$d days</string>
+    <string name="start_focus">Start Focus Session</string>
+    <string name="focus_garden">Focus Garden</string>
+    
+    <!-- Session Screen -->
+    <string name="focus_session">Focus Session</string>
+    <string name="break_session">Break Session</string>
+    <string name="pause_resume">Pause/Resume</string>
+    <string name="stop_session">Stop Session</string>
+    <string name="adjust_volume">Adjust Volume</string>
+    <string name="growing_tree">Growing Tree</string>
+    <string name="stop_session_title">Stop Session?</string>
+    <string name="stop_session_message">Are you sure you want to stop the current session? Progress will still be saved for completed time.</string>
+    <string name="stop">Stop</string>
+    <string name="cancel">Cancel</string>
+    <string name="focus_music">Focus Music</string>
+    <string name="playing_focus_music">Playing background focus music</string>
+    
+    <!-- Garden Screen -->
+    <string name="garden_subtitle">Watch your garden grow with every focus session you complete</string>
+    <string name="empty_garden_message">Complete focus sessions to grow trees in your garden</string>
+    <string name="garden_stats">Total trees: %1$d | Focus time: %2$s</string>
+    <string name="tree_image">Tree Image</string>
+    
+    <!-- Statistics Screen -->
+    <string name="statistics_subtitle">Track your focus progress and improvements</string>
+    <string name="total_focus_time">Total Focus Time</string>
+    <string name="sessions_completed">Sessions Completed</string>
+    <string name="current_streak_label">Current Streak</string>
+    <string name="focus_by_day">Focus Time by Day</string>
+    <string name="no_focus_data">Complete focus sessions to see statistics</string>
+    
+    <!-- Settings Screen -->
+    <string name="timer_settings">Timer Settings</string>
+    <string name="focus_duration">Focus Duration</string>
+    <string name="short_break_duration">Short Break Duration</string>
+    <string name="long_break_duration">Long Break Duration</string>
+    <string name="sessions_before_long_break">Sessions Before Long Break</string>
+    <string name="audio_settings">Audio Settings</string>
+    <string name="play_background_audio">Play Background Audio</string>
+    <string name="audio_track">Audio Track</string>
+    <string name="default_volume">Default Volume</string>
+    <string name="appearance">Appearance</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="tree_type">Tree Type</string>
+    <string name="save_settings">Save Settings</string>
+    <string name="settings_saved">Settings saved successfully</string>
+    <string name="low">Low</string>
+    <string name="high">High</string>
+    <string name="percent_format">%d%%</string>
+    
+    <!-- Audio Tracks -->
+    <string name="audio_track_binaural">Binaural Beats</string>
+    <string name="audio_track_nature">Nature Sounds</string>
+    <string name="audio_track_white_noise">White Noise</string>
+    
+    <!-- Dark Mode Options -->
+    <string name="dark_mode_system">System Default</string>
+    <string name="dark_mode_light">Light Mode</string>
+    <string name="dark_mode_dark">Dark Mode</string>
+    
+    <!-- Tree Types -->
+    <string name="tree_type_oak">Oak Tree</string>
+    <string name="tree_type_pine">Pine Tree</string>
+    <string name="tree_type_maple">Maple Tree</string>
+    
+    <!-- Notification Channels -->
+    <string name="timer_notification_channel_name">Timer Service</string>
+    <string name="timer_notification_channel_description">Used for the timer foreground service</string>
+    <string name="motivation_notification_channel_name">Motivation Messages</string>
+    <string name="motivation_notification_channel_description">Used for motivational messages and reminders</string>
+    <string name="audio_service_channel_name">Background Audio</string>
+    <string name="audio_service_channel_description">Used for background audio playback controls</string>
+    <string name="social_notification_channel_name">Social Notifications</string>
+    <string name="social_notification_channel_description">Used for group invites and social updates</string>
+    
+    <!-- Firebase Messaging Notifications -->
+    <string name="new_invitation">New Invitation</string>
+    <string name="you_have_been_invited">You have been invited to join a focus group session</string>
+    <string name="focus_reminder">Focus Reminder</string>
+    <string name="time_to_focus">It\'s time for your scheduled focus session</string>
+    <string name="notification_icon">Notification icon</string>
+    
+    <!-- Motivational Messages -->
+    <string-array name="focus_motivations">
+        <item>Stay focused on what matters most!</item>
+        <item>Small steps lead to big achievements.</item>
+        <item>Your future self will thank you for this focus session.</item>
+        <item>Deep work builds deep knowledge.</item>
+        <item>Quality focus time is the foundation of success.</item>
+        <item>Concentration is the secret ingredient to excellence.</item>
+        <item>Block out distractions, tune into your goals.</item>
+        <item>Each moment of focus brings you closer to mastery.</item>
+        <item>Nurture your attention like you would a garden.</item>
+        <item>The mind is strengthened by focused effort.</item>
+    </string-array>
+    
+    <string-array name="break_motivations">
+        <item>Rest is essential for peak performance.</item>
+        <item>Take a moment to breathe and relax.</item>
+        <item>Breaks help your brain process what you\'ve learned.</item>
+        <item>Enjoy this moment of calm.</item>
+        <item>Recharge your mind for the next focus session.</item>
+        <item>Step back, breathe, and return stronger.</item>
+        <item>Even the most powerful engines need cooling periods.</item>
+        <item>A brief pause sharpens the mind.</item>
+        <item>Balance work with rest for optimal performance.</item>
+        <item>Mindful breaks lead to mindful work.</item>
+    </string-array>
+    
+    <!-- Plurals -->
+    <plurals name="minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    
+    <plurals name="sessions">
+        <item quantity="one">%d session</item>
+        <item quantity="other">%d sessions</item>
+    </plurals>
+    
+    <plurals name="days_count">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    
+    <plurals name="focus_sessions_count">
+        <item quantity="one">%d Focus Session</item>
+        <item quantity="other">%d Focus Sessions</item>
+    </plurals>
+    
+    <plurals name="minutes_format">
+        <item quantity="one">%d min</item>
+        <item quantity="other">%d mins</item>
+    </plurals>
+    
+    <!-- Analytics Dashboard -->
+    <string name="analytics_dashboard">Analytics Dashboard</string>
+    <string name="productivity_score">Productivity Score</string>
+    <string name="focus_time_today">Focus Today</string>
+    <string name="completion_rate">Completion Rate</string>
+    <string name="ai_productivity_insights">AI Productivity Insights</string>
+    <string name="focus_minutes_by_day">Focus Minutes by Day</string>
+    <string name="last_7_days">Last 7 days</string>
+    <string name="focus_distribution">Focus Time Distribution</string>
+    <string name="focus_distribution_description">When you focus most throughout the day</string>
+    <string name="optimal_focus_times">Your Optimal Focus Times</string>
+    <string name="optimal_times_description">Based on your historical performance</string>
+    <string name="schedule_focus_session">Schedule Session</string>
+    <string name="interruption_analysis">Interruption Analysis</string>
+    <string name="interruption_analysis_description">When you experience the fewest interruptions</string>
+    <string name="apply_insight">Apply</string>
+    <string name="insight_icon">Insight icon</string>
+    <string name="schedule">Schedule</string>
+    <string name="daily">Daily</string>
+    <string name="weekly">Weekly</string>
+    <string name="monthly">Monthly</string>
+    <string name="focus_minutes_value">%d min</string>
+    <string name="percentage_value">%d%%</string>
+    <string name="optimal_time_description">Historical productivity at this time</string>
+    <string name="optimal_time_excellent">Excellent focus time based on your history</string>
+    <string name="optimal_time_good">Good focus time based on your history</string>
+    <string name="optimal_time_moderate">Moderate focus time based on your history</string>
+    
+    <plurals name="streak_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+</resources>

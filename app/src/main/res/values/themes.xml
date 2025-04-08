@@ -1,0 +1,68 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme for light mode -->
+    <style name="Theme.FocusFlow" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/forest_green</item>
+        <item name="colorPrimaryVariant">@color/dark_forest_green</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/earth_brown</item>
+        <item name="colorSecondaryVariant">@color/dark_earth_brown</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/light_beige</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/forest_green</item>
+        <!-- Custom text colors -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <!-- Customize typography -->
+        <item name="textAppearanceHeadline1">@style/TextAppearance.FocusFlow.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.FocusFlow.Headline2</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.FocusFlow.Body1</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.FocusFlow.Body2</item>
+        <item name="textAppearanceButton">@style/TextAppearance.FocusFlow.Button</item>
+    </style>
+    
+    <!-- Text appearance styles -->
+    <style name="TextAppearance.FocusFlow.Headline1" parent="TextAppearance.MaterialComponents.Headline1">
+        <item name="fontFamily">@font/montserrat_bold</item>
+        <item name="android:fontFamily">@font/montserrat_bold</item>
+        <item name="android:textSize">28sp</item>
+    </style>
+    
+    <style name="TextAppearance.FocusFlow.Headline2" parent="TextAppearance.MaterialComponents.Headline2">
+        <item name="fontFamily">@font/montserrat_bold</item>
+        <item name="android:fontFamily">@font/montserrat_bold</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+    
+    <style name="TextAppearance.FocusFlow.Body1" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="fontFamily">@font/roboto_regular</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+    
+    <style name="TextAppearance.FocusFlow.Body2" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="fontFamily">@font/roboto_regular</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    
+    <style name="TextAppearance.FocusFlow.Button" parent="TextAppearance.MaterialComponents.Button">
+        <item name="fontFamily">@font/montserrat_medium</item>
+        <item name="android:fontFamily">@font/montserrat_medium</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+    
+    <style name="TextAppearance.FocusFlow.Timer" parent="TextAppearance.MaterialComponents.Headline1">
+        <item name="fontFamily">@font/roboto_mono_bold</item>
+        <item name="android:fontFamily">@font/roboto_mono_bold</item>
+        <item name="android:textSize">60sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+</resources>

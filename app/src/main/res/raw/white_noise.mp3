@@ -1,0 +1,6 @@
+/**
+ * This is a placeholder for a white noise MP3 file.
+ * In an actual implementation, this would be a real audio file with white noise
+ * to help mask distracting sounds and improve focus.
+ * This placeholder exists to satisfy the application's build process.
+ */

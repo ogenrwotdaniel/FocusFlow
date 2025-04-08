@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User profiles - users can read any profile but only edit their own
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // User stats can be updated by the user
+      match /stats/{statId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Focus sessions - users can only see and modify their own sessions
+    match /sessions/{sessionId} {
+      allow read, write: if request.auth != null && 
+                           (resource == null || resource.data.userId == request.auth.uid);
+    }
+    
+    // Trees - users can see all trees but only create/edit their own
+    match /trees/{treeId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Community gardens - members can read, but only the owner can write
+    match /gardens/{gardenId} {
+      allow read: if request.auth != null && 
+                   (resource.data.isPublic == true || 
+                    request.auth.uid in resource.data.memberIds || 
+                    request.auth.uid == resource.data.ownerId);
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+    }
+    
+    // Friend challenges - participants can read but only creator can modify
+    match /challenges/{challengeId} {
+      allow read: if request.auth != null && 
+                   (request.auth.uid in resource.data.participantIds || 
+                    request.auth.uid == resource.data.creatorId);
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && resource.data.creatorId == request.auth.uid;
+    }
+    
+    // Friend connections - both users can read/write their connection
+    match /connections/{connectionId} {
+      allow read, write: if request.auth != null && 
+                           (request.auth.uid == resource.data.userId || 
+                            request.auth.uid == resource.data.friendId);
+    }
+    
+    // Notifications - only the recipient can read their notifications
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null && 
+                           request.auth.uid == resource.data.recipientId;
+    }
+  }
+}
