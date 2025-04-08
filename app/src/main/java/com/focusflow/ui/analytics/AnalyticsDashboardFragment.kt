@@ -19,7 +19,6 @@ import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
-import com.github.mikephil.charting.utils.ColorTemplate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.format.TextStyle
@@ -39,6 +38,8 @@ class AnalyticsDashboardFragment : Fragment() {
     
     private lateinit var insightAdapter: InsightAdapter
     private lateinit var optimalTimeAdapter: OptimalFocusTimeAdapter
+    private lateinit var trendAdapter: TrendAdapter
+    private lateinit var streakAdapter: StreakCardAdapter
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -78,6 +79,25 @@ class AnalyticsDashboardFragment : Fragment() {
             adapter = optimalTimeAdapter
         }
         
+        // Setup trend adapter
+        trendAdapter = TrendAdapter()
+        
+        binding.rvTrends.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = trendAdapter
+        }
+        
+        // Setup streak adapter (initially empty, will be updated in observeViewModel)
+        streakAdapter = StreakCardAdapter(null, 0) {
+            // Handle streak action button click
+            viewModel.refreshRemoteConfig()
+        }
+        
+        binding.rvStreak.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = streakAdapter
+        }
+        
         // Setup swipe refresh
         binding.swipeRefreshLayout.setOnRefreshListener {
             viewModel.loadAnalyticsData()
@@ -110,6 +130,43 @@ class AnalyticsDashboardFragment : Fragment() {
                 launch {
                     viewModel.optimalFocusTimes.collect { times ->
                         optimalTimeAdapter.submitList(times.map { mapToUiModel(it) })
+                    }
+                }
+                
+                // Observe productivity trends
+                launch {
+                    viewModel.productivityTrends.collect { trends ->
+                        trendAdapter.submitList(trends)
+                        
+                        // Show or hide trends section based on data availability
+                        val trendsParent = binding.rvTrends.parent.parent as View
+                        trendsParent.visibility = if (trends.isNotEmpty()) View.VISIBLE else View.GONE
+                    }
+                }
+                
+                // Observe streak data
+                launch {
+                    viewModel.currentStreak.collect { streak ->
+                        // Update streak days in header
+                        streak?.let {
+                            // Update main streak display if visible
+                            binding.tvStreakDays.text = resources.getQuantityString(
+                                R.plurals.streak_days, 
+                                it.currentStreakDays,
+                                it.currentStreakDays
+                            )
+                            
+                            // Update streak card
+                            viewModel.dailyFocusGoal.value.let { goal ->
+                                // Create new adapter with updated data to force redraw
+                                streakAdapter = StreakCardAdapter(streak, goal) {
+                                    viewModel.refreshRemoteConfig()
+                                }
+                                binding.rvStreak.adapter = streakAdapter
+                            }
+                        } ?: run {
+                            binding.tvStreakDays.text = resources.getString(R.string.no_streak) 
+                        }
                     }
                 }
                 

@@ -173,6 +173,8 @@
     <string name="optimal_time_excellent">Excellent focus time based on your history</string>
     <string name="optimal_time_good">Good focus time based on your history</string>
     <string name="optimal_time_moderate">Moderate focus time based on your history</string>
+    <string name="trend_analysis_description">See how your focus habits are changing over time</string>
+    <string name="no_streak">0 days</string>
     
     <plurals name="streak_days">
         <item quantity="one">%d day</item>

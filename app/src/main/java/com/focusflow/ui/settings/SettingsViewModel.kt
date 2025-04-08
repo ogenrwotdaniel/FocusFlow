@@ -4,6 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.focusflow.BuildConfig
+import com.focusflow.analytics.AnalyticsTestHelper
+import com.focusflow.analytics.AnalyticsTracker
 import com.focusflow.data.preference.UserPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
@@ -12,7 +15,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val analyticsTracker: AnalyticsTracker,
+    private val analyticsTestHelper: AnalyticsTestHelper
 ) : ViewModel() {
 
     // Timer settings
@@ -163,6 +168,29 @@ class SettingsViewModel @Inject constructor(
             _volume.value = tempVolume
             _darkMode.value = tempDarkMode
             _treeType.value = tempTreeType
+            
+            // Log settings changed event
+            analyticsTracker.logSettingsChanged("settings_saved", "true")
+        }
+    }
+    
+    /**
+     * Send test analytics events for debug purposes
+     * Only available in debug builds
+     */
+    fun sendTestAnalyticsEvents() {
+        if (BuildConfig.DEBUG) {
+            analyticsTestHelper.sendTestEvents()
+        }
+    }
+    
+    /**
+     * Reset analytics data for testing purposes
+     * Only available in debug builds
+     */
+    fun resetAnalyticsData() {
+        if (BuildConfig.DEBUG) {
+            analyticsTestHelper.resetAnalyticsData()
         }
     }
 }

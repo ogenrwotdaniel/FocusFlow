@@ -247,6 +247,82 @@ class AnalyticsDashboardHelper @Inject constructor(
     }
     
     /**
+     * Get daily productivity data for trend analysis
+     * Returns data for the last 30 days by default
+     */
+    suspend fun getDailyProductivityData(userId: String? = null, daysBack: Int = 30): List<DailyProductivity> {
+        val sessions = getUserSessions(userId)
+        val endDate = LocalDate.now()
+        val startDate = endDate.minusDays(daysBack.toLong())
+        
+        // Create a map to hold productivity data for each day
+        val dailyData = mutableMapOf<LocalDate, DailyProductivity>()
+        
+        // Initialize all days in the range with empty data
+        var currentDate = startDate
+        while (!currentDate.isAfter(endDate)) {
+            dailyData[currentDate] = DailyProductivity(
+                date = currentDate.toString(),
+                focusMinutes = 0,
+                sessionsCompleted = 0,
+                totalSessions = 0,
+                completionRate = 0.0
+            )
+            currentDate = currentDate.plusDays(1)
+        }
+        
+        // Fill in data from sessions
+        sessions.forEach { session ->
+            val sessionDate = session.startTime.toLocalDate()
+            
+            // Only include sessions within our date range
+            if (!sessionDate.isBefore(startDate) && !sessionDate.isAfter(endDate)) {
+                val currentDailyData = dailyData[sessionDate] ?: DailyProductivity(
+                    date = sessionDate.toString(),
+                    focusMinutes = 0,
+                    sessionsCompleted = 0,
+                    totalSessions = 0,
+                    completionRate = 0.0
+                )
+                
+                // Update the data with this session's information
+                val updatedData = currentDailyData.copy(
+                    focusMinutes = currentDailyData.focusMinutes + session.actualFocusTimeMinutes,
+                    sessionsCompleted = currentDailyData.sessionsCompleted + (if (session.completed) 1 else 0),
+                    totalSessions = currentDailyData.totalSessions + 1
+                )
+                
+                // Recalculate completion rate
+                val completionRate = if (updatedData.totalSessions > 0) {
+                    updatedData.sessionsCompleted.toDouble() / updatedData.totalSessions
+                } else 0.0
+                
+                // Store the updated data
+                dailyData[sessionDate] = updatedData.copy(completionRate = completionRate)
+            }
+        }
+        
+        // Convert the map to a sorted list
+        val result = dailyData.values.sortedBy { LocalDate.parse(it.date) }
+        
+        // Store in Firebase for future reference
+        userId?.let { uid ->
+            val dailyDataMap = result.associate { data ->
+                data.date to mapOf(
+                    "focusMinutes" to data.focusMinutes,
+                    "sessionsCompleted" to data.sessionsCompleted,
+                    "totalSessions" to data.totalSessions,
+                    "completionRate" to data.completionRate
+                )
+            }
+            
+            firebaseRepository.updateUserAnalytics(uid, mapOf("dailyProductivityData" to dailyDataMap))
+        }
+        
+        return result
+    }
+    
+    /**
      * Get user's focus sessions from Firebase
      */
     private suspend fun getUserSessions(userId: String? = null): List<FocusSession> {
@@ -264,6 +340,18 @@ data class FocusTimeRecommendation(
     val dayOfWeek: DayOfWeek,
     val time: String,
     val reason: String
+)
+
+/**
+ * Data class for daily productivity metrics
+ * Used for trend analysis
+ */
+data class DailyProductivity(
+    val date: String,
+    val focusMinutes: Int,
+    val sessionsCompleted: Int,
+    val totalSessions: Int,
+    val completionRate: Double
 )
 
 /**

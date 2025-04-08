@@ -322,6 +322,56 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Trends Analysis Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/trends_title"
+                        android:textAppearance="?attr/textAppearanceHeadline6" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/trend_analysis_description"
+                        android:textAppearance="?attr/textAppearanceBody2"
+                        android:textColor="?android:attr/textColorSecondary" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvTrends"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:clipToPadding="false"
+                        tools:itemCount="2"
+                        tools:listitem="@layout/trend_card_item" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Streak Section -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvStreak"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:clipToPadding="false"
+                tools:itemCount="1"
+                tools:listitem="@layout/streak_card_item" />
+
             <!-- Interruptions Analysis -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

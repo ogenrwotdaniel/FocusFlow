@@ -30,4 +30,8 @@
     <color name="error">#F44336</color>
     <color name="warning">#FFEB3B</color>
     <color name="info">#2196F3</color>
+    
+    <!-- Analytics colors -->
+    <color name="positive_trend">#4CAF50</color>  <!-- Green color for positive trends -->
+    <color name="negative_trend">#F44336</color>  <!-- Red color for negative trends -->
 </resources>

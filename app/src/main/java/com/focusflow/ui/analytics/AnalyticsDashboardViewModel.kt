@@ -7,12 +7,15 @@ import com.focusflow.ai.InsightType
 import com.focusflow.analytics.AnalyticsDashboardHelper
 import com.focusflow.analytics.AnalyticsTracker
 import com.focusflow.analytics.FocusTimeRecommendation
+import com.focusflow.analytics.RemoteConfigManager
+import com.focusflow.analytics.TrendAnalyzer
 import com.focusflow.data.remote.FirebaseRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 /**
@@ -23,7 +26,9 @@ import javax.inject.Inject
 class AnalyticsDashboardViewModel @Inject constructor(
     private val firebaseRepository: FirebaseRepository,
     private val analyticsHelper: AnalyticsDashboardHelper,
-    private val analyticsTracker: AnalyticsTracker
+    private val analyticsTracker: AnalyticsTracker,
+    private val remoteConfigManager: RemoteConfigManager,
+    private val trendAnalyzer: TrendAnalyzer
 ) : ViewModel() {
 
     // Productivity score
@@ -38,6 +43,18 @@ class AnalyticsDashboardViewModel @Inject constructor(
     private val _optimalFocusTimes = MutableStateFlow<List<FocusTimeRecommendation>>(emptyList())
     val optimalFocusTimes: StateFlow<List<FocusTimeRecommendation>> = _optimalFocusTimes.asStateFlow()
     
+    // Productivity trends
+    private val _productivityTrends = MutableStateFlow<List<TrendAnalyzer.ProductivityTrend>>(emptyList())
+    val productivityTrends: StateFlow<List<TrendAnalyzer.ProductivityTrend>> = _productivityTrends.asStateFlow()
+    
+    // Productivity streak
+    private val _currentStreak = MutableStateFlow<TrendAnalyzer.ProductivityStreak?>(null)
+    val currentStreak: StateFlow<TrendAnalyzer.ProductivityStreak?> = _currentStreak.asStateFlow()
+    
+    // Daily goal
+    private val _dailyFocusGoal = MutableStateFlow(0)
+    val dailyFocusGoal: StateFlow<Int> = _dailyFocusGoal.asStateFlow()
+    
     // Loading state
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -45,6 +62,14 @@ class AnalyticsDashboardViewModel @Inject constructor(
     // Error state
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
+    
+    init {
+        // Initialize Remote Config
+        remoteConfigManager.initialize()
+        
+        // Load default daily goal
+        _dailyFocusGoal.value = remoteConfigManager.getDailyFocusGoalMinutes()
+    }
     
     /**
      * Load analytics data from Firebase
@@ -69,14 +94,69 @@ class AnalyticsDashboardViewModel @Inject constructor(
                         analyticsTracker.logScreenView("analytics_dashboard", "AnalyticsDashboardFragment")
                     }
                     
+                    // Load daily productivity data for trend analysis
                     launch {
-                        val insightStrings = analyticsHelper.getProductivityInsights(userId)
-                        _insights.value = mapInsights(insightStrings)
+                        val productivityData = analyticsHelper.getDailyProductivityData(userId)
+                        
+                        // Only run trend analysis if enabled in remote config
+                        if (remoteConfigManager.isFeatureEnabled(RemoteConfigManager.KEY_ENABLE_TREND_ANALYSIS) && 
+                            productivityData.isNotEmpty()) {
+                            
+                            // Convert to TrendAnalyzer format
+                            val trendData = productivityData.map { daily ->
+                                TrendAnalyzer.DailyProductivity(
+                                    date = LocalDate.parse(daily.date),
+                                    focusMinutes = daily.focusMinutes,
+                                    sessionsCompleted = daily.sessionsCompleted,
+                                    completionRate = daily.completionRate
+                                )
+                            }
+                            
+                            // Calculate trends
+                            val trends = trendAnalyzer.calculateTrends(trendData)
+                            _productivityTrends.value = trends
+                            
+                            // Find patterns
+                            val patterns = trendAnalyzer.findPatterns(trendData)
+                            
+                            // Calculate streaks
+                            val streak = trendAnalyzer.calculateStreaks(trendData)
+                            _currentStreak.value = streak
+                            
+                            // Generate insights from trends
+                            val trendInsights = trendAnalyzer.generateInsightsFromTrends(
+                                trends, patterns, streak
+                            )
+                            
+                            // Combine with other insights
+                            val baseInsights = analyticsHelper.getProductivityInsights(userId)
+                            val combinedInsights = (baseInsights + trendInsights).distinct()
+                            
+                            // Map to insight objects
+                            _insights.value = mapInsights(combinedInsights)
+                            
+                            // Log that we're providing advanced insights
+                            analyticsTracker.logEvent(
+                                "advanced_insights_provided",
+                                mapOf(
+                                    "insight_count" to combinedInsights.size,
+                                    "trend_based_count" to trendInsights.size,
+                                    "has_streak" to (streak.currentStreakDays > 0)
+                                )
+                            )
+                        } else {
+                            // Fall back to basic insights if trend analysis is disabled
+                            val insightStrings = analyticsHelper.getProductivityInsights(userId)
+                            _insights.value = mapInsights(insightStrings)
+                        }
                     }
                     
-                    launch {
-                        val focusTimes = analyticsHelper.getOptimalFocusTimes(userId)
-                        _optimalFocusTimes.value = focusTimes
+                    // Only load focus time predictions if enabled
+                    if (remoteConfigManager.isFeatureEnabled(RemoteConfigManager.KEY_ENABLE_FOCUS_PREDICTIONS)) {
+                        launch {
+                            val focusTimes = analyticsHelper.getOptimalFocusTimes(userId)
+                            _optimalFocusTimes.value = focusTimes
+                        }
                     }
                 } else {
                     _error.value = "Please sign in to view your analytics"
@@ -105,11 +185,26 @@ class AnalyticsDashboardViewModel @Inject constructor(
                     insightType = insight.type.name
                 )
                 
-                // If the insight is a recommendation, implement it automatically
-                if (insight.type == InsightType.RECOMMENDATION) {
-                    // Apply the recommendation settings
-                    insight.metadata?.get("settingKey")?.let { key ->
-                        insight.metadata["settingValue"]?.let { value ->
+                // Handle different action types
+                if (insight.actionText == "Set Reminder") {
+                    // TODO: Open reminder creation dialog
+                } else if (insight.actionText == "View Schedule") {
+                    // TODO: Navigate to schedule screen
+                } else if (insight.actionText?.contains("Adjust") == true) {
+                    // Parse setting to adjust from insight text
+                    val settingRegex = "Adjust ([\\w\\s]+)".toRegex()
+                    val matchResult = settingRegex.find(insight.actionText)
+                    matchResult?.groupValues?.get(1)?.let { setting ->
+                        // Determine key and value to update
+                        val (key, value) = when {
+                            setting.contains("notification") -> "notifications_enabled" to "true"
+                            setting.contains("session length") -> "focus_session_minutes" to "25"
+                            setting.contains("break") -> "short_break_minutes" to "5"
+                            else -> "" to ""
+                        }
+                        
+                        if (key.isNotEmpty()) {
+                            // Update the user setting in Firebase
                             firebaseRepository.updateUserSettings(userId, mapOf(key to value))
                             
                             // Track settings changed via insight
@@ -145,6 +240,23 @@ class AnalyticsDashboardViewModel @Inject constructor(
     }
     
     /**
+     * Manually check for updated remote configuration
+     */
+    fun refreshRemoteConfig() {
+        remoteConfigManager.fetchAndActivate()
+        _dailyFocusGoal.value = remoteConfigManager.getDailyFocusGoalMinutes()
+        
+        // Log analytics event for manual refresh
+        analyticsTracker.logEvent(
+            "refreshed_remote_config", 
+            mapOf("source" to "analytics_dashboard")
+        )
+        
+        // Reload analytics to reflect any config changes
+        loadAnalyticsData()
+    }
+    
+    /**
      * Map string insights to the Insight model
      */
     private fun mapInsights(insightStrings: List<String>): List<Insight> {
@@ -167,24 +279,30 @@ class AnalyticsDashboardViewModel @Inject constructor(
             text.contains("completion rate") -> "Completion Rate"
             text.contains("most productive day") -> "Productive Day"
             text.contains("most productive") -> "Productivity Peak"
-            text.contains("trending up") -> "Trending Upward"
+            text.contains("trending up") || text.contains("increased by") -> "Trending Upward"
+            text.contains("trending down") || text.contains("decreased by") -> "Trending Downward"
             text.contains("focus time has been") -> "Focus Trend"
+            text.contains("streak") -> "Focus Streak"
+            text.contains("daily goal") -> "Daily Goal"
             else -> "Productivity Insight"
         }
     }
     
     private fun getInsightType(text: String): InsightType {
         return when {
-            text.contains("Great work") || text.contains("excellent") -> InsightType.ACHIEVEMENT
-            text.contains("Try to") || text.contains("Consider") || text.contains("decreasing") -> InsightType.WARNING
-            text.contains("Your most productive") -> InsightType.PATTERN_DETECTED
+            text.contains("Great work") || text.contains("excellent") || 
+            text.contains("streak") || text.contains("increased by") -> InsightType.ACHIEVEMENT
+            text.contains("Try to") || text.contains("Consider") || 
+            text.contains("decreasing") || text.contains("decreased by") -> InsightType.WARNING
+            text.contains("Your most productive") || text.contains("pattern") -> InsightType.PATTERN_DETECTED
             else -> InsightType.RECOMMENDATION
         }
     }
     
     private fun hasAction(text: String): Boolean {
         return when {
-            text.contains("Try to") || text.contains("Consider") -> true
+            text.contains("Try to") || text.contains("Consider") || 
+            text.contains("Can you beat") || text.contains("Set a goal") -> true
             else -> false
         }
     }
@@ -193,6 +311,8 @@ class AnalyticsDashboardViewModel @Inject constructor(
         return when {
             text.contains("Try to improve") -> "Set Reminder"
             text.contains("Consider adjusting") -> "View Schedule"
+            text.contains("Can you beat that record") -> "Set Streak Goal"
+            text.contains("Set a goal") -> "Set Daily Goal"
             else -> null
         }
     }
@@ -213,6 +333,22 @@ class AnalyticsDashboardViewModel @Inject constructor(
             val matchResult = timeRegex.find(text)
             matchResult?.groupValues?.get(1)?.let {
                 metadata["productiveTime"] = it.trim()
+            }
+        }
+        
+        if (text.contains("streak")) {
+            val streakRegex = "(\\d+)[-\\s]day streak".toRegex()
+            val matchResult = streakRegex.find(text)
+            matchResult?.groupValues?.get(1)?.let {
+                metadata["streakDays"] = it
+            }
+        }
+        
+        if (text.contains("goal of")) {
+            val goalRegex = "goal of (\\d+)".toRegex()
+            val matchResult = goalRegex.find(text)
+            matchResult?.groupValues?.get(1)?.let {
+                metadata["goalMinutes"] = it
             }
         }
         

@@ -47,6 +47,17 @@
             android:name=".service.audio.AudioService"
             android:enabled="true"
             android:exported="false" />
+            
+        <!-- Analytics Test Activity -->
+        <activity
+            android:name=".test.AnalyticsTestActivity"
+            android:exported="true"
+            android:label="Analytics Test">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <receiver
             android:name=".service.widget.FocusWidgetProvider"

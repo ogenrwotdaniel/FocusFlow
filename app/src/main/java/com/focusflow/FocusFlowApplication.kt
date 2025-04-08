@@ -10,6 +10,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.HiltAndroidApp
+import timber.log.Timber
 
 @HiltAndroidApp
 class FocusFlowApplication : Application() {
@@ -20,9 +21,10 @@ class FocusFlowApplication : Application() {
         const val AUDIO_CHANNEL_ID = "audio_channel"
         const val SOCIAL_CHANNEL_ID = "social_channel"
     }
-
+    
+    // Will be initialized in onCreate
     private lateinit var firebaseAnalytics: FirebaseAnalytics
-
+    
     override fun onCreate() {
         super.onCreate()
         
@@ -30,8 +32,34 @@ class FocusFlowApplication : Application() {
         FirebaseApp.initializeApp(this)
         firebaseAnalytics = Firebase.analytics
         
+        // Setup Timber for logging
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+            
+            // Initialize Firebase debugging
+            initializeFirebaseDebugging()
+        }
+        
         // Create notification channels
         createNotificationChannels()
+    }
+    
+    /**
+     * Initialize Firebase debugging utilities in debug builds
+     */
+    private fun initializeFirebaseDebugging() {
+        try {
+            // Use reflection to avoid direct dependency in release builds
+            val debugLoggerClass = Class.forName("com.focusflow.debug.FirebaseDebugLogger")
+            val staticMethod = debugLoggerClass.getMethod("printSetupInstructions")
+            staticMethod.invoke(null)
+            
+            // Log that Firebase Analytics is initialized
+            Timber.d("Firebase Analytics initialized in debug mode")
+            firebaseAnalytics.setAnalyticsCollectionEnabled(true)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to initialize Firebase debugging")
+        }
     }
 
     private fun createNotificationChannels() {

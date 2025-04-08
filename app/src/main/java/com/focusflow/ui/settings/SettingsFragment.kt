@@ -8,6 +8,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.focusflow.BuildConfig
 import com.focusflow.R
 import com.focusflow.databinding.FragmentSettingsBinding
 import com.google.android.material.snackbar.Snackbar
@@ -37,6 +38,11 @@ class SettingsFragment : Fragment() {
         setupAudioSettings()
         setupAppearanceSettings()
         setupSaveButton()
+        
+        // Only show debug options in debug builds
+        if (BuildConfig.DEBUG) {
+            setupDebugOptions()
+        }
         
         observeViewModel()
     }
@@ -212,6 +218,35 @@ class SettingsFragment : Fragment() {
             Snackbar.make(
                 binding.root,
                 R.string.settings_saved,
+                Snackbar.LENGTH_SHORT
+            ).show()
+        }
+    }
+    
+    /**
+     * Setup debug options for testing - only visible in debug builds
+     */
+    private fun setupDebugOptions() {
+        // Make debug section visible
+        binding.cardViewDebugOptions.visibility = View.VISIBLE
+        binding.dividerDebug.visibility = View.VISIBLE
+        
+        // Setup analytics test button
+        binding.buttonTestAnalytics.setOnClickListener {
+            viewModel.sendTestAnalyticsEvents()
+            Snackbar.make(
+                binding.root,
+                "Analytics test events sent to Firebase",
+                Snackbar.LENGTH_SHORT
+            ).show()
+        }
+        
+        // Setup analytics reset button
+        binding.buttonResetAnalytics.setOnClickListener {
+            viewModel.resetAnalyticsData()
+            Snackbar.make(
+                binding.root,
+                "Analytics data reset",
                 Snackbar.LENGTH_SHORT
             ).show()
         }
