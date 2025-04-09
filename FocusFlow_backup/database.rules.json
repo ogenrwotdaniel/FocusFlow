@@ -1,0 +1,50 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    
+    "userPresence": {
+      "$userId": {
+        // Users can only write their own presence data
+        ".read": "auth !== null",
+        ".write": "auth !== null && auth.uid === $userId"
+      }
+    },
+    
+    "groupSessions": {
+      "$sessionId": {
+        // Anyone can read public group sessions, participants can modify
+        ".read": "auth !== null",
+        ".write": "auth !== null && (data.child('hostId').val() === auth.uid || root.child('groupSessions').child($sessionId).child('participants').child(auth.uid).exists())"
+      }
+    },
+    
+    "focusStatus": {
+      "$userId": {
+        // Users can write their own status, friends can read
+        ".read": "auth !== null && (auth.uid === $userId || root.child('connections').child($userId).child(auth.uid).exists())",
+        ".write": "auth !== null && auth.uid === $userId"
+      }
+    },
+    
+    "chatMessages": {
+      "$sessionId": {
+        // Only session participants can read and write messages
+        ".read": "auth !== null && (root.child('groupSessions').child($sessionId).child('participants').child(auth.uid).exists() || root.child('groupSessions').child($sessionId).child('hostId').val() === auth.uid)",
+        ".write": "auth !== null && (root.child('groupSessions').child($sessionId).child('participants').child(auth.uid).exists() || root.child('groupSessions').child($sessionId).child('hostId').val() === auth.uid)",
+        "$messageId": {
+          // Messages must include a timestamp and sender ID
+          ".validate": "newData.hasChildren(['text', 'senderId', 'timestamp']) && newData.child('senderId').val() === auth.uid"
+        }
+      }
+    },
+    
+    "activityFeed": {
+      "$userId": {
+        // Users can read their own feed, only the system can write to it
+        ".read": "auth !== null && auth.uid === $userId",
+        ".write": "auth !== null && auth.uid === 'system'"
+      }
+    }
+  }
+}
