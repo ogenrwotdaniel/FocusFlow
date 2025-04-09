@@ -1,0 +1,29 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme for dark mode -->
+    <style name="Theme.FocusFlow" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/light_forest_green</item>
+        <item name="colorPrimaryVariant">@color/forest_green</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/light_earth_brown</item>
+        <item name="colorSecondaryVariant">@color/earth_brown</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/deep_navy</item>
+        <item name="colorSurface">@color/dark_navy</item>
+        <item name="colorOnBackground">@color/white</item>
+        <item name="colorOnSurface">@color/white</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/black</item>
+        <!-- Custom text colors -->
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/light_gray</item>
+        <!-- Typography (same styles, colors adjusted in the theme) -->
+        <item name="textAppearanceHeadline1">@style/TextAppearance.FocusFlow.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.FocusFlow.Headline2</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.FocusFlow.Body1</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.FocusFlow.Body2</item>
+        <item name="textAppearanceButton">@style/TextAppearance.FocusFlow.Button</item>
+    </style>
+</resources>

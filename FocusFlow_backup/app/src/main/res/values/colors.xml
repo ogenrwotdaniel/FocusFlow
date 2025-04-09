@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary colors -->
+    <color name="primary">#388E3C</color>
+    <color name="primary_dark">#2E7D32</color>
+    <color name="primary_light">#A5D6A7</color>
+    <color name="accent">#FFC107</color>
+    
+    <!-- Neutral colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="light_gray">#F5F5F5</color>
+    <color name="gray">#9E9E9E</color>
+    <color name="dark_gray">#616161</color>
+    
+    <!-- Background colors -->
+    <color name="background">#FAFAFA</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="light_beige">#F5F5DC</color>
+    <color name="light_green">#E8F5E9</color>
+    
+    <!-- Tree colors -->
+    <color name="leaf_green">#66BB6A</color>
+    <color name="trunk_brown">#795548</color>
+    <color name="soil_brown">#5D4037</color>
+    <color name="seed_brown">#8D6E63</color>
+    
+    <!-- Status colors -->
+    <color name="success">#4CAF50</color>
+    <color name="error">#F44336</color>
+    <color name="warning">#FFEB3B</color>
+    <color name="info">#2196F3</color>
+    
+    <!-- Analytics colors -->
+    <color name="positive_trend">#4CAF50</color>  <!-- Green color for positive trends -->
+    <color name="negative_trend">#F44336</color>  <!-- Red color for negative trends -->
+</resources>

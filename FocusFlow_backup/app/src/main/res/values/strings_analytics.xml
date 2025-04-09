@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Analytics Dashboard -->
+    <string name="title_analytics">Analytics</string>
+    <string name="analytics_loading">Loading your productivity data…</string>
+    <string name="analytics_no_data">Complete your first focus session to see your analytics</string>
+    <string name="analytics_error">Couldn\'t load analytics: %1$s</string>
+    
+    <!-- Productivity Score -->
+    <string name="productivity_score_title">Productivity Score</string>
+    <string name="productivity_score_subtitle">Based on your focus sessions and completion rate</string>
+    
+    <!-- Trends -->
+    <string name="trends_title">Productivity Trends</string>
+    <string name="trend_focus_time">Focus Time</string>
+    <string name="trend_completion_rate">Completion Rate</string>
+    <string name="trend_sessions_completed">Sessions Completed</string>
+    <string name="trend_overall_productivity">Overall Productivity</string>
+    
+    <string name="trend_focus_time_improving">You\'re spending more time in focus. This increased focus will help you achieve more.</string>
+    <string name="trend_focus_time_declining">Your focus time has decreased recently. Consider setting aside dedicated focus blocks in your calendar.</string>
+    <string name="trend_completion_rate_improving">You\'re completing more of your sessions without interruption. Great discipline!</string>
+    <string name="trend_completion_rate_declining">You\'re completing fewer sessions. Try shorter sessions or removing distractions.</string>
+    <string name="trend_sessions_improving">You\'re doing more focus sessions. Consistent practice builds the focus habit.</string>
+    <string name="trend_sessions_declining">You\'re starting fewer focus sessions lately. Try scheduling regular focus time.</string>
+    <string name="trend_productivity_improving">Your overall productivity is trending up. Keep up the great work!</string>
+    <string name="trend_productivity_declining">Your overall productivity has declined. Review your focus habits and environment.</string>
+    
+    <!-- Streaks -->
+    <string name="streak_title">Focus Streak</string>
+    <string name="streak_start_new">Set a goal of %1$d minutes focused time each day and build your first streak!</string>
+    <string name="streak_day_one">You\'ve met your daily goal of %1$d minutes. Now build on this success!</string>
+    <string name="streak_building">You\'ve met your daily goal of %2$d minutes for %1$d days in a row. Keep it going!</string>
+    <string name="streak_week_milestone">Impressive! Your %1$d-day streak shows your commitment to focused work.</string>
+    <string name="streak_two_week_milestone">Outstanding %1$d-day streak! Your consistency is building a powerful habit.</string>
+    <string name="streak_month_milestone">Incredible focus discipline! Your %1$d-day streak puts you in the top tier of focused individuals.</string>
+    
+    <string name="streak_action_start">Start a Streak</string>
+    <string name="streak_action_resume">Resume Streak</string>
+    <string name="streak_action_maintain">Keep Going</string>
+    <string name="streak_action_set_goal">Set a New Goal</string>
+    
+    <!-- Focus Time Recommendations -->
+    <string name="focus_recommendations_title">Recommended Focus Times</string>
+    <string name="focus_recommendation_action">Schedule Session</string>
+    
+    <!-- Insights -->
+    <string name="insights_title">Productivity Insights</string>
+    <string name="insights_empty">Complete more focus sessions to receive personalized insights</string>
+    <string name="insight_apply">Apply</string>
+    
+    <!-- Actions -->
+    <string name="refresh_analytics">Refresh</string>
+    <string name="share_analytics">Share</string>
+    <string name="export_data">Export Data</string>
+</resources>
