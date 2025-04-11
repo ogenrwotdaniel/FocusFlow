@@ -36,10 +36,10 @@ dependencies:
   cupertino_icons: ^1.0.8
   
   # Firebase
-  firebase_core: ^2.27.1
-  firebase_analytics: ^10.8.10
-  firebase_auth: ^4.16.0
-  cloud_firestore: ^4.14.0
+  firebase_core: ^3.13.0
+  firebase_analytics: ^11.4.5
+  firebase_auth: ^5.5.2
+  cloud_firestore: ^5.6.6
   
   # State management
   provider: ^6.1.2
@@ -52,10 +52,10 @@ dependencies:
   # UI components
   flutter_svg: ^2.0.10+1
   percent_indicator: ^4.2.3
-  intl: ^0.19.0
+  intl: ^0.20.2
   
   # Notifications
-  flutter_local_notifications: ^16.1.0
+  flutter_local_notifications: ^19.0.0
   
   # Audio
   just_audio: ^0.9.36
@@ -63,7 +63,7 @@ dependencies:
   
   # Utilities
   uuid: ^4.2.1
-  fl_chart: ^0.65.0
+  fl_chart: ^0.70.2
 
 dev_dependencies:
   flutter_test:
