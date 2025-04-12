@@ -92,6 +92,8 @@ class SessionListItem extends StatelessWidget {
         return Colors.orange;
       case SessionType.longBreak:
         return Colors.green;
+      default:
+        return Colors.blue;
     }
   }
   
@@ -103,6 +105,8 @@ class SessionListItem extends StatelessWidget {
         return Icons.coffee;
       case SessionType.longBreak:
         return Icons.weekend;
+      default:
+        return Icons.timer;
     }
   }
   
@@ -114,6 +118,8 @@ class SessionListItem extends StatelessWidget {
         return 'Short Break';
       case SessionType.longBreak:
         return 'Long Break';
+      default:
+        return 'Session';
     }
   }
   

@@ -14,6 +14,11 @@ class SessionProvider with ChangeNotifier {
   List<FocusSession> get completedSessions => _sessions.where((s) => s.completed).toList();
   List<FocusSession> get recentSessions => _sessions.take(5).toList();
   
+  // Constructor that loads sessions
+  SessionProvider() {
+    loadSessions();
+  }
+  
   // Get today's sessions
   List<FocusSession> getTodaySessions() {
     final now = DateTime.now();

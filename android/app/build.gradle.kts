@@ -9,7 +9,7 @@ plugins {
 android {
     namespace = "com.example.focusflow_flutter"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = flutter.ndkVersion // Revert to using Flutter's NDK version
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -33,6 +33,10 @@ android {
 
     buildTypes {
         release {
+            // Turn off minification for testing
+            isMinifyEnabled = false
+            isShrinkResources = false
+            
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")

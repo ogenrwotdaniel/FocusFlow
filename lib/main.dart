@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:focus_flow/services/notification_service.dart';
 import 'package:focus_flow/providers/timer_provider.dart';
@@ -9,7 +9,6 @@ import 'package:focus_flow/providers/stats_provider.dart';
 import 'package:focus_flow/providers/garden_provider.dart';
 import 'package:focus_flow/providers/task_provider.dart';
 import 'package:focus_flow/screens/home_screen.dart';
-import 'package:focus_flow/screens/tasks_screen.dart';
 import 'package:focus_flow/screens/timer_screen.dart';
 import 'package:focus_flow/screens/stats_screen.dart';
 import 'package:focus_flow/screens/settings_screen.dart';
@@ -18,7 +17,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Firebase
-  await Firebase.initializeApp();
+  // await Firebase.initializeApp();
   
   // Initialize notifications
   await NotificationService().init();

@@ -593,10 +593,10 @@
       "name": "focus_flow",
       "rootUri": "../",
       "packageUri": "lib/",
-      "languageVersion": "3.7"
+      "languageVersion": "3.0"
     }
   ],
-  "generated": "2025-04-12T11:16:22.394650Z",
+  "generated": "2025-04-12T12:34:58.243202Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///C:/flutter",

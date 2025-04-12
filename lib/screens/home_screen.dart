@@ -4,7 +4,6 @@ import 'package:focus_flow/providers/session_provider.dart';
 import 'package:focus_flow/providers/stats_provider.dart';
 import 'package:focus_flow/providers/garden_provider.dart';
 import 'package:focus_flow/providers/settings_provider.dart';
-import 'package:focus_flow/screens/tasks_screen.dart';
 import 'package:focus_flow/screens/timer_screen.dart';
 import 'package:focus_flow/screens/stats_screen.dart';
 import 'package:focus_flow/screens/settings_screen.dart';

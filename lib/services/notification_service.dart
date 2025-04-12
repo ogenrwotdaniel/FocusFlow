@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -41,19 +42,23 @@ class NotificationService {
   }
 
   Future<void> _requestPermissions() async {
+    // Request Android permissions
     await _notificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.requestPermission();
     
-    await _notificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
+    // Request iOS permissions only on iOS platform
+    if (Platform.isIOS || Platform.isMacOS) {
+      await _notificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              DarwinFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+    }
   }
 
   void _onDidReceiveNotificationResponse(NotificationResponse response) {
