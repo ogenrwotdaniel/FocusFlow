@@ -9,7 +9,7 @@ plugins {
 android {
     namespace = "com.example.focusflow_flutter"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion // Revert to using Flutter's NDK version
+    ndkVersion = "27.0.12077973" // Revert to using Flutter's NDK version
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
