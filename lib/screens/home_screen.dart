@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:focus_flow/providers/session_provider.dart';
 import 'package:focus_flow/providers/stats_provider.dart';
 import 'package:focus_flow/providers/garden_provider.dart';
-import 'package:focus_flow/providers/settings_provider.dart';
 import 'package:focus_flow/screens/timer_screen.dart';
 import 'package:focus_flow/screens/stats_screen.dart';
 import 'package:focus_flow/screens/settings_screen.dart';
@@ -236,10 +235,10 @@ class TasksTab extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
-                  // Navigate to timer screen and start a focus session
-                  setState(() {
-                    _onItemTapped(1); // Switch to timer tab
-                  });
+                  // Navigate to Timer screen directly
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const TimerScreen()),
+                  );
                 },
                 child: const Text(
                   'Start Focus Session',

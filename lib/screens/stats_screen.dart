@@ -219,7 +219,7 @@ class WeeklyStatsTab extends StatelessWidget {
                       barTouchData: BarTouchData(
                         enabled: true,
                         touchTooltipData: BarTouchTooltipData(
-                          tooltipBgColor: Colors.blueGrey,
+                          getTooltipColor: (_, __, ___) => Colors.blueGrey,
                           getTooltipItem: (group, groupIndex, rod, rodIndex) {
                             final dayName = weeklyData.keys.elementAt(groupIndex);
                             final minutes = weeklyData.values.elementAt(groupIndex);
