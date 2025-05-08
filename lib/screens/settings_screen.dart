@@ -3,6 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:focus_flow/providers/settings_provider.dart';
 import 'package:focus_flow/providers/stats_provider.dart';
 import 'package:focus_flow/providers/garden_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:focus_flow/screens/achievements_screen.dart';
+import 'package:focus_flow/models/session_model.dart'; // For SessionType
+import 'package:focus_flow/models/session_segment_model.dart'; // For SessionSegment
+import 'package:flutter/services.dart'; // For FilteringTextInputFormatter
+import 'package:share_plus/share_plus.dart'; // For Share.share
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -39,6 +45,138 @@ class SettingsScreen extends StatelessWidget {
 
 class TimerSettingsTab extends StatelessWidget {
   const TimerSettingsTab({super.key});
+
+  // Method to show dialog for adding/editing a session segment
+  Future<void> _showAddEditSegmentDialog(BuildContext context, SettingsProvider settingsProvider, {SessionSegment? segment, int? index}) async {
+    final _formKey = GlobalKey<FormState>();
+    SessionType type = segment?.type ?? SessionType.focus;
+    int durationMinutes = segment?.durationMinutes ?? 25;
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap button!
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(segment == null ? 'Add Segment' : 'Edit Segment'),
+          content: StatefulBuilder( // To update dialog state for dropdown
+            builder: (BuildContext context, StateSetter setState) {
+              return Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    DropdownButtonFormField<SessionType>(
+                      value: type,
+                      decoration: const InputDecoration(labelText: 'Segment Type'),
+                      items: SessionType.values.map((SessionType value) {
+                        return DropdownMenuItem<SessionType>(
+                          value: value,
+                          child: Text(value.toString().split('.').last),
+                        );
+                      }).toList(),
+                      onChanged: (SessionType? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            type = newValue;
+                          });
+                        }
+                      },
+                    ),
+                    TextFormField(
+                      initialValue: durationMinutes.toString(),
+                      decoration: const InputDecoration(labelText: 'Duration (minutes)'),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a duration';
+                        }
+                        final n = int.tryParse(value);
+                        if (n == null) {
+                          return 'Please enter a valid number';
+                        }
+                        if (n <= 0) {
+                          return 'Duration must be positive';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        durationMinutes = int.parse(value!);
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Save'),
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  _formKey.currentState!.save();
+                  final newSegment = SessionSegment(type: type, durationMinutes: durationMinutes);
+                  List<SessionSegment> currentSegments = List.from(settingsProvider.settings.customCycleSegments);
+                  if (segment == null) { // Add new
+                    currentSegments.add(newSegment);
+                  } else { // Edit existing
+                    if (index != null) {
+                      currentSegments[index] = newSegment;
+                    }
+                  }
+                  settingsProvider.updateCustomCycleSegments(currentSegments);
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Method to show delete confirmation dialog
+  Future<void> _showDeleteConfirmationDialog(BuildContext context, String title, String message, VoidCallback onConfirm) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap button!
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(message),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                onConfirm();
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,6 +271,193 @@ class TimerSettingsTab extends StatelessWidget {
                   autoStartBreaks: settingsProvider.settings.autoStartBreaks,
                   autoStartFocus: value,
                 );
+              },
+            ),
+            
+            const SettingsHeader('Automation & Custom Cycles'),
+            SwitchSetting(
+              title: 'Automatically start breaks',
+              subtitle: 'Automatically transition to a break after a focus session ends.',
+              value: settingsProvider.settings.autoStartBreaks,
+              onChanged: (value) {
+                settingsProvider.updateAutomationSettings(
+                  autoStartBreaks: value,
+                  autoStartFocus: settingsProvider.settings.autoStartFocus,
+                );
+              },
+            ),
+            SwitchSetting(
+              title: 'Automatically start focus sessions',
+              subtitle: 'Automatically transition to a focus session after a break ends.',
+              value: settingsProvider.settings.autoStartFocus,
+              onChanged: (value) {
+                settingsProvider.updateAutomationSettings(
+                  autoStartBreaks: settingsProvider.settings.autoStartBreaks,
+                  autoStartFocus: value,
+                );
+              },
+            ),
+            SwitchSetting(
+              title: 'Use custom work/break cycle',
+              subtitle: 'Define your own sequence of work and break durations.',
+              value: settingsProvider.settings.useCustomCycle,
+              onChanged: (value) {
+                settingsProvider.updateUseCustomCycle(value);
+              },
+            ),
+            if (settingsProvider.settings.useCustomCycle)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Card(
+                  elevation: 2.0,
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Custom Cycle Segments:',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Theme.of(context).colorScheme.primary),
+                        ),
+                        const SizedBox(height: 10),
+                        if (settingsProvider.settings.customCycleSegments.isEmpty)
+                          const Center(child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16.0),
+                            child: Text('No custom segments defined. Tap "Add Segment" to create your cycle.'),
+                          ))
+                        else
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: settingsProvider.settings.customCycleSegments.length,
+                            itemBuilder: (context, index) {
+                              final segment = settingsProvider.settings.customCycleSegments[index];
+                              return ListTile(
+                                title: Text('${segment.type.toString().split('.').last} (${segment.durationMinutes} min)'),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.edit, color: Theme.of(context).colorScheme.secondary),
+                                      onPressed: () {
+                                        _showAddEditSegmentDialog(context, settingsProvider, segment: segment, index: index);
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.error),
+                                      onPressed: () {
+                                        _showDeleteConfirmationDialog(
+                                          context,
+                                          'Delete Segment',
+                                          'Are you sure you want to delete this ${segment.type.toString().split('.').last} segment?',
+                                          () {
+                                            List<SessionSegment> currentSegments = List.from(settingsProvider.settings.customCycleSegments);
+                                            currentSegments.removeAt(index);
+                                            settingsProvider.updateCustomCycleSegments(currentSegments);
+                                          }
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        const SizedBox(height: 10),
+                        Center(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.add_circle_outline),
+                            label: const Text('Add Segment'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            onPressed: () {
+                              _showAddEditSegmentDialog(context, settingsProvider);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            
+            const SettingsHeader('Ambient Sounds'),
+            ListTile(
+              title: const Text('Select Sound'),
+              trailing: DropdownButton<String>(
+                value: settingsProvider.settings.selectedAmbientSound,
+                underline: Container(), // Remove underline
+                items: <DropdownMenuItem<String>>[
+                  const DropdownMenuItem(value: 'none', child: Text('None')),
+                  // Assuming assets are directly in 'assets/sounds/'
+                  // USER: Please verify these paths match your pubspec.yaml and actual file locations
+                  const DropdownMenuItem(value: 'sounds/Music asset 001.mp3', child: Text('Music 1 (Rain)')), // Example: give them nice names
+                  const DropdownMenuItem(value: 'sounds/Music asset 002.mp3', child: Text('Music 2 (Forest)')),
+                  const DropdownMenuItem(value: 'sounds/Music asset 004.mp3', child: Text('Music 4 (Cafe)')),
+                  const DropdownMenuItem(value: 'sounds/Music asset 005.mp3', child: Text('Music 5 (White Noise)')),
+                  const DropdownMenuItem(value: 'sounds/Music asset 006.mp3', child: Text('Music 6 (Binaural)')),
+                  // Add more sounds from your assets folder as needed, e.g.:
+                  // const DropdownMenuItem(value: 'sounds/your_sound_file.mp3', child: Text('Your Sound Name')),
+                ],
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    settingsProvider.updateSelectedAmbientSound(newValue);
+                  }
+                },
+              ),
+            ),
+            SliderSetting(
+              title: 'Ambient Sound Volume',
+              value: settingsProvider.settings.ambientSoundVolume,
+              min: 0.0,
+              max: 1.0,
+              divisions: 20, // for 0.05 increments
+              valueLabel: (settingsProvider.settings.ambientSoundVolume * 100).toStringAsFixed(0) + '%',
+              onChanged: (value) {
+                settingsProvider.updateAmbientSoundVolume(value);
+              },
+            ),
+            SwitchSetting(
+              title: 'Play during Focus Sessions',
+              subtitle: 'Play selected sound while focusing.',
+              value: settingsProvider.settings.playAmbientSoundDuringFocus,
+              onChanged: (value) {
+                settingsProvider.updateAmbientSoundPlaybackSettings(playDuringFocus: value);
+              },
+            ),
+            SwitchSetting(
+              title: 'Play during Breaks',
+              subtitle: 'Play selected sound during break times.',
+              value: settingsProvider.settings.playAmbientSoundDuringBreaks,
+              onChanged: (value) {
+                settingsProvider.updateAmbientSoundPlaybackSettings(playDuringBreaks: value);
+              },
+            ),
+            
+            const SettingsHeader('Focus Goals'),
+            SliderSetting(
+              title: 'Daily Focus Goal',
+              value: settingsProvider.settings.dailyFocusGoalMinutes.toDouble(),
+              min: 30,
+              max: 480,
+              divisions: (480 - 30) ~/ 15,
+              valueLabel: '${(settingsProvider.settings.dailyFocusGoalMinutes / 60).toStringAsFixed(1)} hours',
+              onChanged: (value) {
+                settingsProvider.updateFocusGoals(dailyGoal: value.toInt());
+              },
+            ),
+            SliderSetting(
+              title: 'Weekly Focus Goal',
+              value: settingsProvider.settings.weeklyFocusGoalMinutes.toDouble(),
+              min: 120,
+              max: 3000,
+              divisions: (3000 - 120) ~/ 60,
+              valueLabel: '${(settingsProvider.settings.weeklyFocusGoalMinutes / 60).toStringAsFixed(1)} hours',
+              onChanged: (value) {
+                settingsProvider.updateFocusGoals(weeklyGoal: value.toInt());
               },
             ),
             
@@ -254,56 +579,147 @@ class NotificationSettingsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SettingsProvider>(
-      builder: (context, settingsProvider, child) {
-        return ListView(
-          children: [
-            const SettingsHeader('Notifications'),
-            SwitchSetting(
-              title: 'Enable Notifications',
-              subtitle: 'Show timer notifications and reminders',
-              value: settingsProvider.settings.enableNotifications,
-              onChanged: (value) {
-                settingsProvider.updateNotificationSettings(
-                  enableNotifications: value,
-                  enableMotivationalMessages: settingsProvider.settings.enableMotivationalMessages,
-                );
-              },
-            ),
-            
-            if (settingsProvider.settings.enableNotifications)
-              SwitchSetting(
-                title: 'Motivational Messages',
-                subtitle: 'Receive occasional motivational messages',
-                value: settingsProvider.settings.enableMotivationalMessages,
-                onChanged: (value) {
-                  settingsProvider.updateNotificationSettings(
-                    enableNotifications: settingsProvider.settings.enableNotifications,
-                    enableMotivationalMessages: value,
-                  );
-                },
-              ),
-            
-            const SettingsHeader('Garden'),
-            SwitchSetting(
-              title: 'Enable Growing Garden',
-              subtitle: 'Grow virtual trees for completed focus sessions',
-              value: settingsProvider.settings.enableGrowingGarden,
-              onChanged: (value) {
-                settingsProvider.updateGardenSettings(
-                  enableGrowingGarden: value,
-                );
-              },
-            ),
-            
-            if (settingsProvider.settings.enableGrowingGarden)
-              const ListTile(
-                title: Text('Garden Points'),
-                subtitle: Text('Each minute of focus = 1 point for your garden'),
-              ),
-          ],
-        );
-      },
+    final settingsProvider = Provider.of<SettingsProvider>(context);
+    final settings = settingsProvider.settings;
+
+    return ListView(
+      children: [
+        const SettingsHeader('Notifications'),
+        SwitchSetting(
+          title: 'Enable Notifications',
+          subtitle: 'Show timer notifications and reminders',
+          value: settings.enableNotifications,
+          onChanged: (value) {
+            settingsProvider.updateNotificationSettings(
+              enableNotifications: value,
+              enableMotivationalMessages: settings.enableMotivationalMessages,
+            );
+          },
+        ),
+        
+        if (settings.enableNotifications)
+          SwitchSetting(
+            title: 'Motivational Messages',
+            subtitle: 'Receive occasional motivational messages',
+            value: settings.enableMotivationalMessages,
+            onChanged: (value) {
+              settingsProvider.updateNotificationSettings(
+                enableNotifications: settings.enableNotifications,
+                enableMotivationalMessages: value,
+              );
+            },
+          ),
+        
+        const SettingsHeader('Smarter Reminders'),
+        SwitchSetting(
+          title: 'Adaptive Break Reminder',
+          subtitle: 'Get reminded to take a break after prolonged focus.',
+          value: settings.enableAdaptiveBreakReminder,
+          onChanged: (value) {
+            settingsProvider.updateAdaptiveBreakReminderSettings(
+              enable: value,
+              thresholdMinutes: settings.adaptiveBreakReminderThresholdMinutes, // Keep current threshold
+            );
+          },
+        ),
+        if (settings.enableAdaptiveBreakReminder)
+          SliderSetting(
+            title: 'Break Reminder Threshold',
+            value: settings.adaptiveBreakReminderThresholdMinutes.toDouble(),
+            min: 30,
+            max: 180,
+            divisions: (180 - 30) ~/ 5, // 5 minute increments
+            valueLabel: '${settings.adaptiveBreakReminderThresholdMinutes} min',
+            onChanged: (value) {
+              settingsProvider.updateAdaptiveBreakReminderSettings(
+                enable: settings.enableAdaptiveBreakReminder, // Keep current enable state
+                thresholdMinutes: value.round(),
+              );
+            },
+          ),
+        
+        SwitchSetting(
+          title: 'Planned Session Start Reminder',
+          subtitle: 'Get reminded to start a session you might have planned.',
+          value: settings.enablePlannedSessionStartReminder,
+          onChanged: (value) {
+            settingsProvider.updatePlannedSessionReminderSettings(
+              enable: value,
+              leadTimeMinutes: settings.plannedSessionReminderLeadTimeMinutes, // Keep current lead time
+            );
+          },
+        ),
+        if (settings.enablePlannedSessionStartReminder)
+          SliderSetting(
+            title: 'Planned Session Lead Time',
+            value: settings.plannedSessionReminderLeadTimeMinutes.toDouble(),
+            min: 5,
+            max: 60,
+            divisions: (60 - 5) ~/ 5, // 5 minute increments
+            valueLabel: '${settings.plannedSessionReminderLeadTimeMinutes} min before',
+            onChanged: (value) {
+              settingsProvider.updatePlannedSessionReminderSettings(
+                enable: settings.enablePlannedSessionStartReminder, // Keep current enable state
+                leadTimeMinutes: value.round(),
+              );
+            },
+          ),
+
+        SwitchSetting(
+          title: 'Wind Down Reminder',
+          subtitle: 'Gentle reminder before a scheduled session starts.',
+          value: settings.enableWindDownReminder,
+          onChanged: (value) {
+            settingsProvider.updateWindDownReminderSettings(
+              enable: value,
+              leadTimeMinutes: settings.windDownReminderLeadTimeMinutes, // Keep current lead time
+            );
+          },
+        ),
+        if (settings.enableWindDownReminder)
+          SliderSetting(
+            title: 'Wind Down Lead Time',
+            value: settings.windDownReminderLeadTimeMinutes.toDouble(),
+            min: 1,
+            max: 15,
+            divisions: (15 - 1) ~/ 1, // 1 minute increments
+            valueLabel: '${settings.windDownReminderLeadTimeMinutes} min before',
+            onChanged: (value) {
+              settingsProvider.updateWindDownReminderSettings(
+                enable: settings.enableWindDownReminder, // Keep current enable state
+                leadTimeMinutes: value.round(),
+              );
+            },
+          ),
+        
+        const SettingsHeader('Garden'),
+        SwitchSetting(
+          title: 'Enable Growing Garden',
+          subtitle: 'Grow virtual trees for completed focus sessions',
+          value: settings.enableGrowingGarden,
+          onChanged: (value) {
+            settingsProvider.updateGardenSettings(
+              enableGrowingGarden: value,
+            );
+          },
+        ),
+        
+        if (settings.enableGrowingGarden)
+          const ListTile(
+            title: Text('Garden Points'),
+            subtitle: Text('Each minute of focus = 1 point for your garden'),
+          ),
+        const SettingsHeader('Task Management'),
+        SwitchListTile(
+          title: const Text('Suggest Next Task'),
+          subtitle: const Text('After completing a task, suggest the next available one.'),
+          value: settings.enableNextTaskSuggestion,
+          onChanged: (bool value) {
+            settingsProvider.updateEnableNextTaskSuggestion(value);
+          },
+          secondary: const Icon(Icons.lightbulb_outline),
+        ),
+      ],
     );
   }
 }
@@ -311,172 +727,88 @@ class NotificationSettingsTab extends StatelessWidget {
 class AboutTab extends StatelessWidget {
   const AboutTab({super.key});
 
+  Future<void> _launchURL(String url) async {
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final statsProvider = Provider.of<StatsProvider>(context, listen: false);
+    final gardenProvider = Provider.of<GardenProvider>(context, listen: false);
+    final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+
     return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24.0),
-          child: Column(
-            children: [
-              Icon(
-                Icons.timer,
-                size: 80,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Focus Flow',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Version 1.0.0',
-                style: TextStyle(
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-        ),
-        
-        const Divider(),
-        
+        const SettingsHeader('App Information'),
         ListTile(
           leading: const Icon(Icons.info_outline),
-          title: const Text('About Focus Flow'),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('About Focus Flow'),
-                  content: const SingleChildScrollView(
-                    child: Text(
-                      'Focus Flow is a productivity app designed to help you stay focused and productive using the Pomodoro Technique. '
-                      'Features include focus timer, statistics tracking, and a virtual garden that grows as you focus.\n\n'
-                      'The Pomodoro Technique is a time management method that uses a timer to break work into intervals, '
-                      'traditionally 25 minutes in length, separated by short breaks.\n\n'
-                      'Focus Flow helps you implement this technique with customizable focus and break durations.'
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Close'),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
+          title: const Text('App Version'),
+          subtitle: const Text('1.0.0+1'), // Replace with dynamic version later if needed
+          onTap: () { /* Maybe show detailed app info */ },
         ),
-        
         ListTile(
-          leading: const Icon(Icons.help_outline),
-          title: const Text('How to Use'),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('How to Use Focus Flow'),
-                  content: const SingleChildScrollView(
-                    child: Text(
-                      '1. Start a focus session from the Timer screen\n\n'
-                      '2. Work on your task until the timer ends\n\n'
-                      '3. Take a short break when prompted\n\n'
-                      '4. After completing several focus sessions, enjoy a longer break\n\n'
-                      '5. Track your progress in the Stats screen\n\n'
-                      '6. Watch your virtual garden grow as you accumulate focus time\n\n'
-                      '7. Customize durations and settings to suit your preferences'
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Close'),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
-        
-        ListTile(
-          leading: const Icon(Icons.privacy_tip_outlined),
+          leading: const Icon(Icons.description_outlined),
           title: const Text('Privacy Policy'),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('Privacy Policy'),
-                  content: const SingleChildScrollView(
-                    child: Text(
-                      'Focus Flow respects your privacy. All your data is stored locally on your device '
-                      'and is not shared with any third parties.\n\n'
-                      'Usage statistics are only used to improve your experience and '
-                      'help you track your productivity.\n\n'
-                      'No personal data is collected or transmitted to external servers.'
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Close'),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
+          onTap: () => _launchURL('https://www.example.com/privacy'), // Replace with your URL
         ),
-        
         ListTile(
-          leading: const Icon(Icons.contact_support_outlined),
-          title: const Text('Contact & Support'),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('Contact & Support'),
-                  content: const SingleChildScrollView(
-                    child: Text(
-                      'For support or feedback, please email:\n'
-                      'support@focusflow.app\n\n'
-                      'We appreciate your feedback and suggestions for improving the app!'
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Close'),
-                    ),
-                  ],
-                );
-              },
-            );
+          leading: const Icon(Icons.gavel_outlined),
+          title: const Text('Terms of Service'),
+          onTap: () => _launchURL('https://www.example.com/terms'), // Replace with your URL
+        ),
+
+        const SettingsHeader('Data Management'),
+        ListTile(
+          leading: const Icon(Icons.download_for_offline_outlined),
+          title: const Text('Export Session History'),
+          subtitle: const Text('Save your session logs as a CSV file.'),
+          onTap: () async {
+            final scaffoldMessenger = ScaffoldMessenger.of(context);
+            final success = await statsProvider.exportSessionData();
+            if (success) {
+              scaffoldMessenger.showSnackBar(
+                const SnackBar(content: Text('Session history export started.'), backgroundColor: Colors.green)
+              );
+            } else {
+              scaffoldMessenger.showSnackBar(
+                const SnackBar(content: Text('Failed to export session history or no data.'), backgroundColor: Colors.red)
+              );
+            }
           },
         ),
-        
-        const Divider(),
-        
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            '© 2025 Focus Flow\nAll rights reserved.',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 12,
-            ),
-            textAlign: TextAlign.center,
-          ),
+        ListTile(
+          leading: const Icon(Icons.settings_backup_restore_outlined, color: Colors.orangeAccent),
+          title: const Text('Reset All App Data', style: TextStyle(color: Colors.orangeAccent)),
+          onTap: () {
+            // TODO: Implement reset confirmation dialog and logic
+            print("Reset All App Data tapped - implement dialog");
+            // Example: _showResetConfirmationDialog(context);
+          },
+        ),
+        const SettingsHeader('Contact & Support'),
+        ListTile(
+          leading: const Icon(Icons.email_outlined),
+          title: const Text('Rate the App'),
+          onTap: () => _launchURL('market://details?id=com.example.focus_flow'), // Replace with your app ID
+        ),
+        ListTile(
+          leading: const Icon(Icons.share_outlined),
+          title: const Text('Share FocusFlow'),
+          onTap: () {
+            Share.share('Check out FocusFlow, a great app for productivity and focus! Download here: [Your App Store Link]'); // Replace link
+          },
+        ),
+
+        const SettingsHeader('Advanced'),
+        ListTile(
+          leading: Icon(Icons.developer_mode_outlined, color: Colors.blueGrey.shade300),
+          title: const Text('Developer Options'),
+          subtitle: const Text('Unlock achievements, reset garden etc.'),
         ),
       ],
     );

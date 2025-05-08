@@ -1,93 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:focus_flow/providers/garden_provider.dart';
+import 'package:focus_flow/providers/garden_provider.dart'; 
+import 'package:focus_flow/models/plant_model.dart'; 
 
 /// Simple placeholder widget that shows a horizontal list of the most
-/// recently planted trees and the number of un‑spent points.
-///
-/// This keeps the build working; you can replace it later with a fancier
-/// graphic garden representation.
+/// recently planted/unlocked plants and the number of un-spent points (concept).
 class GardenPreview extends StatelessWidget {
-  final List<Tree> trees;
-  final int availablePoints;
+  final List<Plant> plants; 
+  // final int availablePoints; 
 
   const GardenPreview({
     super.key,
-    required this.trees,
-    required this.availablePoints,
+    required this.plants,
+    // required this.availablePoints,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Expanded(
-              child: SizedBox(
-                height: 80,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: trees.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final tree = trees[index];
-                    return _TreeAvatar(tree: tree);
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.local_florist, color: Colors.green),
-                Text('$availablePoints pts',
-                    style: Theme.of(context).textTheme.labelMedium),
-              ],
-            ),
-          ],
-        ),
+    if (plants.isEmpty) {
+      return const Center(
+        child: Text('Your garden is waiting to grow!'),
+      );
+    }
+    return SizedBox(
+      height: 120, 
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: plants.length,
+        itemBuilder: (context, index) {
+          return _GardenItem(plant: plants[index]); 
+        },
       ),
     );
   }
 }
 
-class _TreeAvatar extends StatelessWidget {
-  final Tree tree;
-  const _TreeAvatar({required this.tree});
+class _GardenItem extends StatelessWidget {
+  final Plant plant; 
+
+  const _GardenItem({required this.plant});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        CircleAvatar(
-          radius: 22,
-          backgroundColor: Colors.green.shade400,
-          child: Text(
-            _typeToEmoji(tree.type),
-            style: const TextStyle(fontSize: 20),
-          ),
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            plant.imageUrl.isNotEmpty && plant.imageUrl.startsWith('assets/')
+                ? Image.asset(plant.imageUrl, width: 40, height: 40, fit: BoxFit.contain, errorBuilder: (context, error, stackTrace) => const Icon(Icons.eco, size: 30))
+                : const Icon(Icons.eco, size: 30), 
+            const SizedBox(height: 4),
+            Text(
+              plant.name,
+              style: Theme.of(context).textTheme.bodySmall,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text('Lv.${tree.growthStage}',
-            style: const TextStyle(fontSize: 10, color: Colors.grey)),
-      ],
+      ),
     );
-  }
-
-  String _typeToEmoji(TreeType type) {
-    switch (type) {
-      case TreeType.oak:
-        return '🌳';
-      case TreeType.pine:
-        return '🌲';
-      case TreeType.cherry:
-        return '🌸';
-      case TreeType.maple:
-        return '🍁';
-    }
   }
 }

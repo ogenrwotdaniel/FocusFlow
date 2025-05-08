@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:focus_flow/providers/stats_provider.dart';
 import 'package:focus_flow/providers/session_provider.dart';
+import 'package:focus_flow/models/session_model.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -174,6 +175,48 @@ class StatsOverviewTab extends StatelessWidget {
                   description: 'Complete 50 focus sessions',
                   isUnlocked: sessionProvider.completedSessions.length >= 50,
                 ),
+                
+                const SizedBox(height: 32),
+                
+                // Recent Sessions List
+                const Text(
+                  'Recent Sessions',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (sessionProvider.recentSessions.isEmpty)
+                  const Text('No recent sessions to display.')
+                else
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(), // To disable ListView's own scrolling
+                    itemCount: sessionProvider.recentSessions.length,
+                    itemBuilder: (context, index) {
+                      final session = sessionProvider.recentSessions[index];
+                      final title = session.name ?? 'Focus Session';
+                      final subtitle = session.completed
+                          ? 'Completed: ${DateFormat.yMd().add_jm().format(session.endTime!)} - ${session.actualDurationMinutes} min'
+                          : 'Started: ${DateFormat.yMd().add_jm().format(session.startTime)} - ${session.durationMinutes} min (Incomplete)';
+                      final icon = session.type == SessionType.focus
+                          ? Icons.timer_outlined
+                          : session.type == SessionType.shortBreak
+                              ? Icons.coffee_outlined
+                              : Icons.self_improvement_outlined;
+                              
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8.0),
+                        child: ListTile(
+                          leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+                          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+                          subtitle: Text(subtitle),
+                          trailing: session.completed ? const Icon(Icons.check_circle, color: Colors.green) : null,
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
           ),
@@ -190,7 +233,7 @@ class WeeklyStatsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<StatsProvider>(
       builder: (context, statsProvider, child) {
-        final weeklyData = statsProvider.getWeeklyFocusTime();
+        final weeklyData = statsProvider.getHistoricalWeeklyFocusTime();
         
         return SingleChildScrollView(
           child: Padding(
@@ -219,7 +262,7 @@ class WeeklyStatsTab extends StatelessWidget {
                       barTouchData: BarTouchData(
                         enabled: true,
                         touchTooltipData: BarTouchTooltipData(
-                          getTooltipColor: (_, __, ___) => Colors.blueGrey,
+                          // Remove the tooltip color function to fix the type mismatch
                           getTooltipItem: (group, groupIndex, rod, rodIndex) {
                             final dayName = weeklyData.keys.elementAt(groupIndex);
                             final minutes = weeklyData.values.elementAt(groupIndex);
@@ -548,7 +591,7 @@ class ActivityCalendar extends StatelessWidget {
                   final day = adjustedIndex + 1;
                   final date = DateTime(now.year, now.month, day);
                   final dateStr = DateFormat('yyyy-MM-dd').format(date);
-                  final minutes = statsProvider.dailyFocusMinutes[dateStr] ?? 0;
+                  final minutes = statsProvider.dailyFocusMinutesHistorcial[dateStr] ?? 0;
                   
                   return _CalendarDay(
                     day: day,

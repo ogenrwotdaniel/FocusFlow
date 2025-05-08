@@ -6,9 +6,9 @@ import 'package:focus_flow/providers/garden_provider.dart';
 import 'package:focus_flow/screens/timer_screen.dart';
 import 'package:focus_flow/screens/stats_screen.dart';
 import 'package:focus_flow/screens/settings_screen.dart';
+import 'package:focus_flow/screens/schedule_screen.dart';
 import 'package:focus_flow/widgets/session_list_item.dart';
 import 'package:focus_flow/widgets/garden_preview.dart';
-import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -27,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _screens = [
       const TasksTab(),
       const TimerScreen(),
+      const ScheduleScreen(),
       const StatsScreen(),
       const SettingsScreen(),
     ];
@@ -64,6 +65,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.timer),
             label: 'Timer',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event_note),
+            label: 'Schedule',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
@@ -174,9 +179,13 @@ class TasksTab extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               height: 120,
-              child: GardenPreview(
-                trees: gardenProvider.recentTrees,
-                availablePoints: gardenProvider.unspentPoints,
+              child: Consumer<GardenProvider>(
+                builder: (context, gardenProvider, child) {
+                  return GardenPreview(
+                    plants: gardenProvider.availablePlants, 
+                    // availablePoints: gardenProvider.unspentPoints, // Assuming some points system
+                  );
+                },
               ),
             ),
             

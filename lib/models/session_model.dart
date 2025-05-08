@@ -5,6 +5,7 @@ class FocusSession {
   final int durationMinutes;
   final bool completed;
   final SessionType type;
+  final String? name;
 
   FocusSession({
     required this.id,
@@ -13,6 +14,7 @@ class FocusSession {
     required this.durationMinutes,
     this.completed = false,
     this.type = SessionType.focus,
+    this.name,
   });
 
   // Calculate actual duration in minutes
@@ -42,6 +44,7 @@ class FocusSession {
     int? durationMinutes,
     bool? completed,
     SessionType? type,
+    String? name,
   }) {
     return FocusSession(
       id: id ?? this.id,
@@ -50,6 +53,7 @@ class FocusSession {
       durationMinutes: durationMinutes ?? this.durationMinutes,
       completed: completed ?? this.completed,
       type: type ?? this.type,
+      name: name ?? this.name,
     );
   }
 
@@ -62,6 +66,7 @@ class FocusSession {
       'durationMinutes': durationMinutes,
       'completed': completed ? 1 : 0,
       'type': type.index,
+      'name': name,
     };
   }
 
@@ -76,6 +81,7 @@ class FocusSession {
       durationMinutes: map['durationMinutes'],
       completed: map['completed'] == 1,
       type: SessionType.values[map['type']],
+      name: map['name'] as String?,
     );
   }
 }

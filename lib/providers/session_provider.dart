@@ -46,12 +46,14 @@ class SessionProvider with ChangeNotifier {
   FocusSession createSession({
     required int durationMinutes,
     required SessionType type,
+    String? name,
   }) {
     final session = FocusSession(
       id: _uuid.v4(),
       startTime: DateTime.now(),
       durationMinutes: durationMinutes,
       type: type,
+      name: name,
     );
     
     _sessions.insert(0, session);

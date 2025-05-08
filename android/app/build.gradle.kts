@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id("com.google.gms.google-services")
+    // Removed Google Services plugin as we're not using Firebase at the moment
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -14,6 +14,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        // Enable desugaring for newer Java APIs on older Android versions
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -25,7 +27,8 @@ android {
         applicationId = "com.example.focusflow_flutter"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Raised minSdk to 23 to satisfy firebase_auth and other modern libraries
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -46,4 +49,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Add desugaring dependency for Java 8+ features
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

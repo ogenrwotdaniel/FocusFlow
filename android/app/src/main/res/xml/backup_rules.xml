@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Back up app data including shared preferences -->
+    <include domain="sharedpref" path="."/>
+    <include domain="database" path="."/>
+    <exclude domain="sharedpref" path="com.google.android.gms.appid.xml"/>
+</full-backup-content>
